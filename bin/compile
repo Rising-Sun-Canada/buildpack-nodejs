@@ -241,6 +241,9 @@ install_bins() {
     meta_set "npm-version" "$(npm --version)"
   fi
 
+  meta_set "build-step" "install-libreoffice"
+  monitor "install-libreoffice-binary" install_libreoffice "$BUILD_DIR/.heroku/libreoffice"
+
   warn_old_npm
 
   if [[ $YARN_2 == true ]]; then

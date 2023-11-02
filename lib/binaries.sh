@@ -66,6 +66,37 @@ install_yarn() {
   fi
 }
 
+install_libreoffice() {
+  local dir="$1"
+  local url code resolve_result
+
+  curl -L -O https://download.documentfoundation.org/libreoffice/stable/7.0.3/deb/x86_64/LibreOffice_7.0.3_Linux_x86-64_deb.tar.gz
+
+  url="$YARN_BINARY_URL"
+
+  code=$(curl "$url" -L --silent --fail --retry 5 --retry-max-time 15 --retry-connrefused --connect-timeout 5 -o /tmp/libreoffice.tar.gz --write-out "%{http_code}")
+
+  if [ "$code" != "200" ]; then
+    echo "Unable to download libreoffice: $code" && false
+  fi
+
+  rm -rf "$dir"
+  mkdir -p "$dir"
+  if tar --version | grep -q 'gnu'; then
+    tar xzf /tmp/libreoffice.tar.gz -C "$dir" --strip 1 --warning=no-unknown-keyword
+  else
+    tar xzf /tmp/libreoffice.tar.gz -C "$dir" --strip 1
+  fi
+  chmod +x "$dir"/bin/*
+
+  ( cd "$dir" && cd ./DEBS/ && sudo dpkg -i *.deb )
+
+  # Verify it works before capturing and ensure its stderr is inspectable later
+  suppress_output libreoffice --version
+
+  echo "Installed libreoffice $(libreoffice --version)"
+}
+
 install_nodejs() {
   local version="${1:-}"
   local dir="${2:?}"
